@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import CommentBlock from "./CommentBlock";
+import VotePanel from "./VotePanel";
 
 function ArticlePage() {
   const { article_id } = useParams();
@@ -28,7 +29,7 @@ function ArticlePage() {
   if (isLoading) return <p>Loading article...</p>;
   if (error) return <p>Error: {error}</p>;
 
-  const { title, author, created_at, topic, body } = article;
+  const { title, author, created_at, topic, body, votes } = article;
 
   return (
     <article className="article-page">
@@ -37,6 +38,8 @@ function ArticlePage() {
         by {author} | {new Date(created_at).toLocaleDateString()} | Topic: {topic}
       </p>
       <p>{body}</p>
+
+      <VotePanel article_id={article_id} initialVotes={votes} />
 
       <button onClick={() => setShowComments(!showComments)}>
         {showComments ? "Hide Comments" : "View Comments"}
