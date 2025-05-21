@@ -9,9 +9,7 @@ function ArticleList() {
   useEffect(() => {
     fetch("https://nc-news-udp6.onrender.com/api/articles")
       .then((res) => {
-        if (!res.ok) {
-          throw new Error("Failed to fetch articles");
-        }
+        if (!res.ok) throw new Error("Failed to fetch articles");
         return res.json();
       })
       .then((data) => {
@@ -24,15 +22,15 @@ function ArticleList() {
       });
   }, []);
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <p>Loading articles...</p>;
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <ul>
+    <section className="article-list">
       {articles.map((article) => (
         <ArticleCard key={article.article_id} article={article} />
       ))}
-    </ul>
+    </section>
   );
 }
 
