@@ -1,11 +1,13 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import CommentBlock from "./CommentBlock";
 
 function ArticlePage() {
   const { article_id } = useParams();
   const [article, setArticle] = useState(null);
-  const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showComments, setShowComments] = useState(false);
 
   useEffect(() => {
     fetch(`https://nc-news-udp6.onrender.com/api/articles/${article_id}`)
@@ -26,7 +28,7 @@ function ArticlePage() {
   if (isLoading) return <p>Loading article...</p>;
   if (error) return <p>Error: {error}</p>;
 
-  const { title, author, body, created_at, topic } = article;
+  const { title, author, created_at, topic, body } = article;
 
   return (
     <article className="article-page">
@@ -35,6 +37,12 @@ function ArticlePage() {
         by {author} | {new Date(created_at).toLocaleDateString()} | Topic: {topic}
       </p>
       <p>{body}</p>
+
+      <button onClick={() => setShowComments(!showComments)}>
+        {showComments ? "Hide Comments" : "View Comments"}
+      </button>
+
+      {showComments && <CommentBlock />}
     </article>
   );
 }
