@@ -8,6 +8,7 @@ function CommentBlock() {
   const [isPosting, setIsPosting] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const username = "grumpy19";
 
   useEffect(() => {
     fetch(`https://nc-news-udp6.onrender.com/api/articles/${article_id}/comments`)
@@ -35,10 +36,7 @@ function CommentBlock() {
     fetch(`https://nc-news-udp6.onrender.com/api/articles/${article_id}/comments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: "grumpy19", // your hardcoded user
-        body: newComment
-      })
+      body: JSON.stringify({ username, body: newComment })
     })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to post comment");
@@ -52,6 +50,20 @@ function CommentBlock() {
         setError("Failed to post comment. Please try again.");
       })
       .finally(() => setIsPosting(false));
+  };
+
+  const handleDelete = (commentId) => {
+    setComments((curr) => curr.filter((c) => c.comment_id !== commentId));
+
+    fetch(`https://nc-news-udp6.onrender.com/api/comments/${commentId}`, {
+      method: "DELETE"
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Delete failed");
+      })
+      .catch(() => {
+        setError("Delete failed. Please refresh.");
+      });
   };
 
   if (isLoading) return <p>Loading comments...</p>;
@@ -82,6 +94,11 @@ function CommentBlock() {
               {new Date(comment.created_at).toLocaleDateString()}
             </p>
             <p>{comment.body}</p>
+            {comment.author === username && (
+              <button onClick={() => handleDelete(comment.comment_id)} disabled={isPosting}>
+                Delete
+              </button>
+            )}
           </li>
         ))}
       </ul>
