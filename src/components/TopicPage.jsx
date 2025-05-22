@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ArticleCard from "./ArticleCard";
 
@@ -8,8 +8,15 @@ function TopicPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sort_by = searchParams.get("sort_by") || "created_at";
+  const order = searchParams.get("order") || "desc";
+
   useEffect(() => {
-    fetch(`https://nc-news-udp6.onrender.com/api/articles?topic=${topic_slug}`)
+    setIsLoading(true);
+    setError(null);
+
+    fetch(`https://nc-news-udp6.onrender.com/api/articles?topic=${topic_slug}&sort_by=${sort_by}&order=${order}`)
       .then((res) => {
         if (!res.ok) throw new Error("Topic not found");
         return res.json();
@@ -22,18 +29,41 @@ function TopicPage() {
         setError(err.message);
         setIsLoading(false);
       });
-  }, [topic_slug]);
+  }, [topic_slug, sort_by, order]);
 
   if (isLoading) return <p>Loading articles...</p>;
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <section className="article-list">
-      <h2>Articles about "{topic_slug}"</h2>
-      {articles.map((article) => (
-        <ArticleCard key={article.article_id} article={article} />
-      ))}
-    </section>
+    <>
+      <div className="sort-controls">
+        <label>Sort by: </label>
+        <select
+          value={sort_by}
+          onChange={(e) => setSearchParams({ sort_by: e.target.value, order })}
+        >
+          <option value="created_at">Date</option>
+          <option value="comment_count">Comments</option>
+          <option value="votes">Votes</option>
+        </select>
+
+        <label>Order: </label>
+        <select
+          value={order}
+          onChange={(e) => setSearchParams({ sort_by, order: e.target.value })}
+        >
+          <option value="desc">Descending</option>
+          <option value="asc">Ascending</option>
+        </select>
+      </div>
+
+      <section className="article-list">
+        <h2>Articles about "{topic_slug}"</h2>
+        {articles.map((article) => (
+          <ArticleCard key={article.article_id} article={article} />
+        ))}
+      </section>
+    </>
   );
 }
 
