@@ -1,16 +1,17 @@
+import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ArticleCard from "./ArticleCard";
-import TopicList from "./TopicList";
 
-function ArticleList() {
+function TopicPage() {
+  const { topic_slug } = useParams();
   const [articles, setArticles] = useState([]);
-  const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("https://nc-news-udp6.onrender.com/api/articles")
+    fetch(`https://nc-news-udp6.onrender.com/api/articles?topic=${topic_slug}`)
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch articles");
+        if (!res.ok) throw new Error("Topic not found");
         return res.json();
       })
       .then((data) => {
@@ -21,21 +22,19 @@ function ArticleList() {
         setError(err.message);
         setIsLoading(false);
       });
-  }, []);
+  }, [topic_slug]);
 
   if (isLoading) return <p>Loading articles...</p>;
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <>
-      <TopicList />
-      <section className="article-list">
-        {articles.map((article) => (
-          <ArticleCard key={article.article_id} article={article} />
-        ))}
-      </section>
-    </>
+    <section className="article-list">
+      <h2>Articles about "{topic_slug}"</h2>
+      {articles.map((article) => (
+        <ArticleCard key={article.article_id} article={article} />
+      ))}
+    </section>
   );
 }
 
-export default ArticleList;
+export default TopicPage;
