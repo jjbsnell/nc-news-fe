@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ErrorCard from "./ErrorCard";
 import CommentBlock from "./CommentBlock";
+import VotePanel from "./VotePanel";
 
 function ArticlePage() {
   const { article_id } = useParams();
@@ -9,7 +10,6 @@ function ArticlePage() {
   const [article, setArticle] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [votes, setVotes] = useState(0);
   const [showComments, setShowComments] = useState(false);
 
   useEffect(() => {
@@ -23,7 +23,6 @@ function ArticlePage() {
       })
       .then((data) => {
         setArticle(data.article);
-        setVotes(data.article.votes);
         setIsLoading(false);
       })
       .catch((err) => {
@@ -31,19 +30,6 @@ function ArticlePage() {
         setIsLoading(false);
       });
   }, [article_id]);
-
-  function handleVote(change) {
-    setVotes((curr) => curr + change);
-
-    fetch(`https://nc-news-udp6.onrender.com/api/articles/${article_id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ inc_votes: change }),
-    }).catch(() => {
-      setVotes((curr) => curr - change); 
-      setError("Vote failed. Please try again.");
-    });
-  }
 
   if (isLoading) return <p>Loading article...</p>;
   if (error) return <ErrorCard message={error} />;
@@ -56,11 +42,7 @@ function ArticlePage() {
       </p>
       <p>{article.body}</p>
 
-      <div className="vote-controls">
-        <button onClick={() => handleVote(1)}>+1</button>
-        <span>{votes}</span>
-        <button onClick={() => handleVote(-1)}>-1</button>
-      </div>
+      <VotePanel article_id={article_id} initialVotes={article.votes} />
 
       <button onClick={() => setShowComments((curr) => !curr)}>
         {showComments ? "Hide Comments" : "Show Comments"}
